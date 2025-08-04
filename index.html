@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Context Protocol - Interactive Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: white;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+
+        .animated-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(45, 82, 152, 0.3), transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(30, 60, 114, 0.3), transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(78, 205, 196, 0.2), transparent 50%);
+        }
+
+        @keyframes gradientShift {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            33% {
+                transform: translateY(-10px) rotate(1deg);
+            }
+
+            66% {
+                transform: translateY(5px) rotate(-0.5deg);
+            }
+        }
+
+        /* Navigation */
+        .nav-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links li {
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-links li::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .nav-links li:hover::before {
+            left: 100%;
+        }
+
+        .nav-links li:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-links li.active {
+            background: linear-gradient(135deg, #2a5298, #4ecdc4);
+            box-shadow: 0 8px 25px rgba(42, 82, 152, 0.3);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 100px 30px 50px;
+            min-height: 100vh;
+        }
+
+        /* Page System */
+        .page {
+            display: none;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 80px 0;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 4em;
+            font-weight: 300;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .hero p {
+            font-size: 1.4em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #2a5298, #4ecdc4);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(42, 82, 152, 0.4);
+        }
+
+        /* Card Components */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(42, 82, 152, 0.1), rgba(78, 205, 196, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .card-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            display: block;
+            text-align: center;
+        }
+
+        .card h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .card p {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* Architecture Diagram */
+        .architecture {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 40px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .architecture-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .flow-component {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            position: relative;
+        }
+
+        .component-box {
+            background: linear-gradient(135deg, #2a5298, #4ecdc4);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(42, 82, 152, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .component-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: rotate 4s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .component-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .component-box:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px rgba(42, 82, 152, 0.5);
+        }
+
+        .flow-arrow {
+            font-size: 2em;
+            color: #4ecdc4;
+            animation: bounce 2s infinite;
+            margin: 0 10px;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-5px);
+            }
+
+            60% {
+                transform: translateY(-2px);
+            }
+        }
+
+        /* Workflow Steps */
+        .workflow-container {
+            position: relative;
+            margin: 50px 0;
+        }
+
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2a5298, #4ecdc4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-right: 30px;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 8px 25px rgba(42, 82, 152, 0.3);
+        }
+
+        .step-content {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .step-content:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .step-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #4ecdc4;
+        }
+
+        .step-description {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* Comparison Grid */
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 50px 0;
+        }
+
+        .comparison-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 35px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .comparison-card.without {
+            border-left: 5px solid #2a5298;
+        }
+
+        .comparison-card.with {
+            border-left: 5px solid #4ecdc4;
+        }
+
+        .comparison-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #2a5298, #4ecdc4);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .comparison-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .comparison-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Code Examples */
+        .code-container {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #2a5298, #4ecdc4);
+            background-size: 200% 100%;
+            animation: codeGlow 3s linear infinite;
+        }
+
+        @keyframes codeGlow {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .code-container pre {
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+
+        /* Progress Indicator */
+        .progress-indicator {
+            position: fixed;
+            top: 80px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .progress-dots {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .progress-dot.active {
+            background: linear-gradient(135deg, #2a5298, #4ecdc4);
+            transform: scale(1.5);
+            box-shadow: 0 4px 15px rgba(42, 82, 152, 0.4);
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5em;
+            }
+
+            .architecture-flow {
+                flex-direction: column;
+            }
+
+            .comparison-container {
+                grid-template-columns: 1fr;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+                margin: 20px 0;
+            }
+
+            .progress-indicator {
+                display: none;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #5a67d8, #6b46c1);
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float-particles 8s linear infinite;
+        }
+
+        @keyframes float-particles {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="animated-bg"></div>
+
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="nav">
+            <div class="logo">🔗 MCP Guide</div>
+            <ul class="nav-links">
+                <li data-page="home" class="active">Home</li>
+                <li data-page="architecture">Architecture</li>
+                <li data-page="capabilities">Capabilities</li>
+                <li data-page="workflow">Workflow</li>
+                <li data-page="deployment">Deployment</li>
+                <li data-page="examples">Examples</li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Progress Indicator -->
+    <div class="progress-indicator">
+        <div class="progress-dots">
+            <div class="progress-dot active" data-page="home"></div>
+            <div class="progress-dot" data-page="architecture"></div>
+            <div class="progress-dot" data-page="capabilities"></div>
+            <div class="progress-dot" data-page="workflow"></div>
+            <div class="progress-dot" data-page="deployment"></div>
+            <div class="progress-dot" data-page="examples"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Home Page -->
+        <div class="page active" id="home">
+            <div class="hero">
+                <h1>Model Context Protocol</h1>
+                <p>The Universal Standard for AI-Data Integration</p>
+                <button class="cta-button" onclick="navigateToPage('architecture')">
+                    Start Exploring →
+                </button>
+            </div>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">🏗️</div>
+                    <h3>Universal Architecture</h3>
+                    <p>One protocol to connect any AI model with any data source. No more custom integrations for every
+                        connection.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⚡</div>
+                    <h3>Real-Time Access</h3>
+                    <p>AI gets fresh, live data from your actual systems, not outdated snapshots or static training
+                        data.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔒</div>
+                    <h3>Built-in Security</h3>
+                    <p>OAuth 2.1 authentication and granular permission controls ensure your data stays protected.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Architecture Page -->
+        <div class="page" id="architecture">
+            <h1 style="text-align: center; margin-bottom: 50px; font-size: 3em;">🏗️ MCP Architecture</h1>
+
+            <div class="architecture">
+                <h2 style="text-align: center; margin-bottom: 30px;">The Three Key Components</h2>
+                <div class="architecture-flow">
+                    <div class="flow-component">
+                        <div class="component-box">
+                            <div class="component-content">
+                                <h3>HOST</h3>
+                                <p>Your AI Application</p>
+                                <small>Windsurf, Claude Desktop, Cursor</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flow-arrow">⟷</div>
+                    <div class="flow-component">
+                        <div class="component-box">
+                            <div class="component-content">
+                                <h3>CLIENT</h3>
+                                <p>Connection Manager</p>
+                                <small>Protocol Handler, Auth Manager</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flow-arrow">⟷</div>
+                    <div class="flow-component">
+                        <div class="component-box">
+                            <div class="component-content">
+                                <h3>SERVER</h3>
+                                <p>Data & Tools Provider</p>
+                                <small>GitHub, Gmail, Databases</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison-container">
+                <div class="comparison-card without">
+                    <h3>❌ Without MCP</h3>
+                    <h4>Fragmented Integration</h4>
+                    <ul>
+                        <li>Custom code for each AI-data connection</li>
+                        <li>Separate integrations for each LLM</li>
+                        <li>Inconsistent authentication methods</li>
+                        <li>Difficult to maintain and scale</li>
+                        <li>No standardized error handling</li>
+                    </ul>
+                </div>
+                <div class="comparison-card with">
+                    <h3>✅ With MCP</h3>
+                    <h4>Standardized Protocol</h4>
+                    <ul>
+                        <li>One protocol for all AI-data connections</li>
+                        <li>Works with any MCP-compatible LLM</li>
+                        <li>Standardized OAuth 2.1 authentication</li>
+                        <li>Easy to build, maintain, and scale</li>
+                        <li>Consistent error handling and security</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Capabilities Page -->
+        <div class="page" id="capabilities">
+            <h1 style="text-align: center; margin-bottom: 50px; font-size: 3em;">⚡ Three Core Capabilities</h1>
+
+            <div class="card-grid">
+                <div class="card" style="border-left: 5px solid #667eea;">
+                    <div class="card-icon">🛠️</div>
+                    <h3>TOOLS</h3>
+                    <h4 style="color: #667eea; margin-bottom: 15px;">AI-Controlled Actions</h4>
+                    <p><strong>Actions the AI can take:</strong></p>
+                    <ul style="margin-top: 15px; line-height: 1.8;">
+                        <li>Execute database queries</li>
+                        <li>Call weather APIs</li>
+                        <li>Create files or folders</li>
+                        <li>Send emails or Slack messages</li>
+                        <li>Run code or scripts</li>
+                    </ul>
+                </div>
+
+                <div class="card" style="border-left: 5px solid #4ecdc4;">
+                    <div class="card-icon">📚</div>
+                    <h3>RESOURCES</h3>
+                    <h4 style="color: #4ecdc4; margin-bottom: 15px;">App-Controlled Data</h4>
+                    <p><strong>Data the AI can access:</strong></p>
+                    <ul style="margin-top: 15px; line-height: 1.8;">
+                        <li>File contents and metadata</li>
+                        <li>Database schemas</li>
+                        <li>Log files and system info</li>
+                        <li>Git commit history</li>
+                        <li>Documentation and knowledge bases</li>
+                    </ul>
+                </div>
+
+                <div class="card" style="border-left: 5px solid #45b7d1;">
+                    <div class="card-icon">🎯</div>
+                    <h3>PROMPTS</h3>
+                    <h4 style="color: #45b7d1; margin-bottom: 15px;">User-Controlled Templates</h4>
+                    <p><strong>Templates for optimal interactions:</strong></p>
+                    <ul style="margin-top: 15px; line-height: 1.8;">
+                        <li>Code review templates</li>
+                        <li>Data analysis workflows</li>
+                        <li>Report generation formats</li>
+                        <li>Troubleshooting guides</li>
+                        <li>Best practice templates</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workflow Page -->
+        <div class="page" id="workflow">
+            <h1 style="text-align: center; margin-bottom: 50px; font-size: 3em;">🚀 6-Step Workflow</h1>
+
+            <div class="workflow-container">
+                <div class="workflow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">User Request</div>
+                        <div class="step-description">
+                            You ask Claude a question that requires external data or actions.
+                            <br><em>Example: "Show me open GitHub issues in my project"</em>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Host Analysis</div>
+                        <div class="step-description">
+                            The Host analyzes your request and determines what external data or tools are needed.
+                            <br><em>AI identifies the need for GitHub data and the required MCP server</em>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Client Communication</div>
+                        <div class="step-description">
+                            MCP Client sends structured request to appropriate MCP Server using JSON-RPC protocol.
+                            <br><em>Client sends "fetch_github_issues" request with your project parameters</em>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-title">Server Execution</div>
+                        <div class="step-description">
+                            MCP Server performs the actual work (API calls, database queries) and processes data.
+                            <br><em>GitHub Server calls GitHub API, retrieves issues, prepares response</em>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <div class="step-title">Response Integration</div>
+                        <div class="step-description">
+                            Claude incorporates external data into context and generates comprehensive response.
+                            <br><em>AI analyzes GitHub data and prepares detailed project status</em>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <div class="step-title">User Experience</div>
+                        <div class="step-description">
+                            You receive detailed, current response as if Claude "knew" this information all along.
+                            <br><em>"You have 12 open issues: 3 high priority, 9 medium priority..."</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deployment Page -->
+        <div class="page" id="deployment">
+            <h1 style="text-align: center; margin-bottom: 50px; font-size: 3em;">🔄 Deployment Methods</h1>
+
+            <div class="comparison-container">
+                <div class="comparison-card"
+                    style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2)); border-left: 5px solid #667eea;">
+                    <h2 style="text-align: center; color: #667eea; margin-bottom: 25px;">🌐 Online/Remote MCP</h2>
+                    <p style="text-align: center; font-weight: 600; margin-bottom: 20px;">Network-based deployment</p>
+
+                    <div
+                        style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 15px; margin: 20px 0;">
+                        <h4 style="text-align: center; margin-bottom: 15px;">Architecture Flow:</h4>
+                        <div style="text-align: center;">
+                            <div
+                                style="background: rgba(255, 255, 255, 0.2); padding: 10px; margin: 8px 0; border-radius: 8px;">
+                                👤 User in Windsurf</div>
+                            <div style="color: #4ecdc4; font-size: 1.5em;">⬇️</div>
+                            <div
+                                style="background: rgba(255, 255, 255, 0.2); padding: 10px; margin: 8px 0; border-radius: 8px;">
+                                🖥️ MCP Client (Local)</div>
+                            <div style="color: #4ecdc4; font-size: 1.5em;">⬇️ HTTP/WebSocket</div>
+                            <div
+                                style="background: rgba(255, 255, 255, 0.2); padding: 10px; margin: 8px 0; border-radius: 8px;">
+                                🌍 MCP Server (Remote)</div>
+                            <div style="color: #4ecdc4; font-size: 1.5em;">⬇️</div>
+                            <div
+                                style="background: rgba(255, 255, 255, 0.2); padding: 10px; margin: 8px 0; border-radius: 8px;">
+                                🗄️ Remote Data Sources</div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                        <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px;">
+                            <h4 style="color: #4ecdc4; margin-top: 0; text-align: center;">✅ Pros</h4>
+                            <ul style="line-height: 1.6;">
+                                <li>Centralized data</li>
+                                <li>Team sharing</li>
+                                <li>Always up-to-date</li>
+                                <li>Scalable</li>
+                                <li>Real-time sync</li>
+                            </ul>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px;">
+                            <h4 style="color: #667eea; margin-top: 0; text-align: center;">❌ Cons</h4>
+                            <ul style="line-height: 1.6;">
+                                <li>Requires network</li>
+                                <li>Server maintenance</li>
+                                <li>Security concerns</li>
+                                <li>Latency issues</li>
+                                <li>Infrastructure costs</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comparison-card"
+                    style="background: linear-gradient(135deg, rgba(0, 184, 148, 0.2), rgba(0, 206, 201, 0.2)); border-left: 5px solid #00b894;">
+                    <h2 style="text-align: center; color: #00b894; margin-bottom: 25px;">💻 Offline/Local MCP</h2>
+                    <p style="text-align: center; font-weight: 600; margin-bottom: 20px;">Process-based deployment</p>
+
+                    <div
+                        style="background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 15px; margin: 20px 0;">
+                        <h4 style="text-align: center; margin-bottom: 15px;">Architecture Flow:</h4>
+                        <div style="text-align: center;">
+                            <div
+                                style="background: rgba(255, 255, 255, 0.2); padding: 10px; margin: 8px 0; border-radius: 8px;">
+                                👤 User in Windsurf</div>
+                            <div style="color: #4ecdc4; font-size: 1.5em;">⬇️</div>
+                            <div
+                                style="background: rgba(255, 255, 255, 0.2); padding: 10px; margin: 8px 0; border-radius: 8px;">
+                                🖥️ MCP Client (Local)</div>
+                            <div style="color: #4ecdc4; font-size: 1.5em;">⬇️ stdio/local process</div>
+                            <div
+                                style="background: rgba(255, 255, 255, 0.2); padding: 10px; margin: 8px 0; border-radius: 8px;">
+                                ⚙️ MCP Script (Local)</div>
+                            <div style="color: #4ecdc4; font-size: 1.5em;">⬇️</div>
+                            <div
+                                style="background: rgba(255, 255, 255, 0.2); padding: 10px; margin: 8px 0; border-radius: 8px;">
+                                📁 Local Files/NPM packages</div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                        <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px;">
+                            <h4 style="color: #4ecdc4; margin-top: 0; text-align: center;">✅ Pros</h4>
+                            <ul style="line-height: 1.6;">
+                                <li>No network needed</li>
+                                <li>Fast performance</li>
+                                <li>No server setup</li>
+                                <li>Private/secure</li>
+                                <li>Works offline</li>
+                            </ul>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px;">
+                            <h4 style="color: #667eea; margin-top: 0; text-align: center;">❌ Cons</h4>
+                            <ul style="line-height: 1.6;">
+                                <li>Local setup needed</li>
+                                <li>Manual updates</li>
+                                <li>No team sharing</li>
+                                <li>Limited scalability</li>
+                                <li>Version conflicts</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div
+                style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; padding: 30px; border-radius: 20px; text-align: center; margin: 40px 0; box-shadow: 0 15px 35px rgba(108, 92, 231, 0.3);">
+                <h3 style="margin-top: 0; font-size: 1.8em;">🎯 For Your Backyard Design System</h3>
+                <p style="font-size: 1.2em; font-weight: 600;">Offline/Local MCP is PERFECT!</p>
+                <p style="font-size: 1.1em;">Since design tokens and components are in NPM packages, you can access them
+                    locally without any web server.</p>
+            </div> -->
+        </div>
+
+        <!-- Examples Page -->
+        <div class="page" id="examples">
+            <h1 style="text-align: center; margin-bottom: 50px; font-size: 3em;">💡 Real-World Examples</h1>
+
+            <div
+                style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-radius: 25px; padding: 40px; margin: 40px 0; border: 1px solid rgba(255, 255, 255, 0.2);">
+                <h2 style="text-align: center; color: #4ecdc4; margin-bottom: 30px;">🚀 Building Offline MCP for Design
+                    System</h2>
+
+                <div class="workflow-container">
+                    <div class="workflow-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">Create Simple Script (Not a Web Server!)</div>
+                            <div class="step-description">
+                                Your "MCP Server" is just a Node.js script that reads local NPM packages and outputs
+                                JSON via stdio.
+                            </div>
+                            <div class="code-container">
+                                <pre>// This is NOT a web server - just a local script!
+#!/usr/bin/env node
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import * as BdsTokens from '@lowes-tech/bds-tokens';
+import * as BdsReact from '@lowes-tech/bds-react';</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="workflow-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">Read NPM Packages Directly</div>
+                            <div class="step-description">
+                                Access your design system packages that are already installed locally.
+                            </div>
+                            <div class="code-container">
+                                <pre>// Read tokens from installed package
+const colorTokens = extractTokensFromTheme(BdsTokens.ThemeVariables);
+const componentList = Object.keys(BdsReact);</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="workflow-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">Configure Windsurf (Local Process)</div>
+                            <div class="step-description">
+                                Point Windsurf to your local script - no network involved!
+                            </div>
+                            <div class="code-container">
+                                <pre>{
+  "mcpServers": {
+    "backyard": {
+      "command": "node",
+      "args": ["/path/to/your/backyard-mcp-script.js"]
+    }
+  }
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="workflow-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">Communication via stdio</div>
+                            <div class="step-description">
+                                Windsurf talks to your script through standard input/output - no HTTP!
+                            </div>
+                            <div class="code-container">
+                                <pre>Windsurf → stdin → Your Script → stdout → Windsurf
+(All happens locally on your machine)</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                style="background: linear-gradient(135deg, #00b894, #00cec9); color: white; padding: 30px; border-radius: 20px; text-align: center; margin: 40px 0; box-shadow: 0 15px 35px rgba(0, 184, 148, 0.3);">
+                <h3 style="margin-top: 0; font-size: 1.8em;">💡 Key Insight</h3>
+                <p style="font-size: 1.2em; font-weight: 600;">MCP "Server" = Local Process, Not Web Server</p>
+                <p style="font-size: 1.1em;">Your script reads local NPM packages and exposes design tokens/components
+                    through the MCP protocol. No networking, no web servers, no infrastructure!</p>
+            </div>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">👨‍💻</div>
+                    <h3>For Developers</h3>
+                    <ul style="text-align: left; line-height: 1.8;">
+                        <li>Review code changes and database impact</li>
+                        <li>Analyze project dependencies</li>
+                        <li>Generate documentation from codebase</li>
+                        <li>Monitor deployment status</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">📊</div>
+                    <h3>For Data Teams</h3>
+                    <ul style="text-align: left; line-height: 1.8;">
+                        <li>Query databases with natural language</li>
+                        <li>Generate reports from multiple sources</li>
+                        <li>Monitor data pipeline health</li>
+                        <li>Create visualizations from raw data</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">🏢</div>
+                    <h3>For Business Users</h3>
+                    <ul style="text-align: left; line-height: 1.8;">
+                        <li>Access CRM data conversationally</li>
+                        <li>Generate financial reports</li>
+                        <li>Monitor project status across tools</li>
+                        <li>Automate routine processes</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div
+                style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 40px; border-radius: 20px; text-align: center; margin: 50px 0; box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);">
+                <h3 style="margin-top: 0; font-size: 2em;">🚀 Ready to Get Started?</h3>
+
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin: 30px 0; text-align: left;">
+                    <div style="background: rgba(255,255,255,0.1); padding: 25px; border-radius: 15px;">
+                        <h4 style="margin-top: 0; color: #4ecdc4;">1️⃣ Choose Your Host</h4>
+                        <ul style="line-height: 1.6;">
+                            <li>Windsurf IDE (recommended)</li>
+                            <li>Claude Desktop</li>
+                            <li>Cursor</li>
+                            <li>Build your own</li>
+                        </ul>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.1); padding: 25px; border-radius: 15px;">
+                        <h4 style="margin-top: 0; color: #4ecdc4;">2️⃣ Set Up Servers</h4>
+                        <ul style="line-height: 1.6;">
+                            <li>Use existing servers</li>
+                            <li>Build with SDKs</li>
+                            <li>Connect databases</li>
+                            <li>Integrate APIs</li>
+                        </ul>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.1); padding: 25px; border-radius: 15px;">
+                        <h4 style="margin-top: 0; color: #45b7d1;">3️⃣ Start Using</h4>
+                        <ul style="line-height: 1.6;">
+                            <li>Ask natural questions</li>
+                            <li>Access real-time data</li>
+                            <li>Perform actions automatically</li>
+                            <li>Scale as needed</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; font-size: 1.2em; font-weight: 600;">
+                    MCP transforms how AI applications access and interact with your data ecosystem.
+                </div>
+
+                <button class="cta-button" onclick="navigateToPage('home')" style="margin-top: 25px;">
+                    ← Back to Home
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation functionality
+        const pages = ['home', 'architecture', 'capabilities', 'workflow', 'deployment', 'examples'];
+        let currentPageIndex = 0;
+
+        function navigateToPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Show target page
+            document.getElementById(pageId).classList.add('active');
+
+            // Update navigation
+            document.querySelectorAll('.nav-links li').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+
+            // Update progress indicator
+            document.querySelectorAll('.progress-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+            document.querySelector(`.progress-dot[data-page="${pageId}"]`).classList.add('active');
+
+            // Update current page index
+            currentPageIndex = pages.indexOf(pageId);
+        }
+
+        // Add click events to navigation
+        document.querySelectorAll('.nav-links li').forEach(link => {
+            link.addEventListener('click', () => {
+                const pageId = link.getAttribute('data-page');
+                navigateToPage(pageId);
+            });
+        });
+
+        // Add click events to progress dots
+        document.querySelectorAll('.progress-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                const pageId = dot.getAttribute('data-page');
+                navigateToPage(pageId);
+            });
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                if (currentPageIndex < pages.length - 1) {
+                    navigateToPage(pages[currentPageIndex + 1]);
+                }
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (currentPageIndex > 0) {
+                    navigateToPage(pages[currentPageIndex - 1]);
+                }
+            }
+        });
+
+        // Floating particles animation
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.width = particle.style.height = Math.random() * 10 + 5 + 'px';
+            particle.style.animationDelay = Math.random() * 8 + 's';
+            particle.style.animationDuration = (Math.random() * 8 + 8) + 's';
+            document.getElementById('particles').appendChild(particle);
+
+            // Remove particle after animation
+            setTimeout(() => {
+                particle.remove();
+            }, 16000);
+        }
+
+        // Create particles periodically
+        setInterval(createParticle, 2000);
+
+        // Smooth scrolling for better UX
+        document.documentElement.style.scrollBehavior = 'smooth';
+
+        // Add intersection observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all cards and workflow steps
+        document.querySelectorAll('.card, .workflow-step, .comparison-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
+        });
+
+        // Mouse trail effect
+        let mouseTrail = [];
+        document.addEventListener('mousemove', (e) => {
+            mouseTrail.push({
+                x: e.clientX,
+                y: e.clientY,
+                time: Date.now()
+            });
+
+            // Keep only recent trail points
+            mouseTrail = mouseTrail.filter(point => Date.now() - point.time < 500);
+        });
+
+        // Initialize with some particles
+        for (let i = 0; i < 5; i++) {
+            setTimeout(createParticle, i * 1000);
+        }
+    </script>
+</body>
+
+</html>
